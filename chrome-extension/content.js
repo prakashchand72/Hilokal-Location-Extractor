@@ -39,16 +39,14 @@ new MutationObserver(() => {
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.action !== 'do_seat_request') return false;
 
-    fetch(`https://elb.hilokal.com/group-calls/${msg.callId}/seat-request`, {
-        method: 'PUT',
+    fetch(`https://elb.hilokal.com/table-share/${msg.callId}/group-call-share-count`, {
+        method: 'GET',
         credentials: 'include',
         headers: {
             'accept':       'application/json',
-            'content-type': 'application/json',
             'origin':       'https://www.hilokal.com',
             'referer':      'https://www.hilokal.com/',
         },
-        body: '{}'
     })
     .then(async (res) => {
         const text = await res.text().catch(() => '');
