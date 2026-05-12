@@ -65,16 +65,17 @@ searchInput.addEventListener('input', applyFilter);
 // Load on open
 chrome.runtime.sendMessage({ action: 'get_entries' }, render);
 
-// Seat request
+// Seat request — each click fires independently, count shown in status
+let seatSent = 0, seatOk = 0;
 btnSeat.addEventListener('click', () => {
-    btnSeat.disabled = true;
-    seatStatus.textContent = 'Sending…';
+    seatSent++;
+    seatStatus.textContent = `Sending… (×${seatSent})`;
     seatStatus.className = '';
 
-    chrome.runtime.sendMessage({ action: 'seat_request' }, ({ ok, callId, error }) => {
-        btnSeat.disabled = false;
+    chrome.runtime.sendMessage({ action: 'seat_request' }, ({ ok, error }) => {
         if (ok) {
-            seatStatus.textContent = `✓ Seat requested for call ${callId}`;
+            seatOk++;
+            seatStatus.textContent = `✓ ${seatOk} sent`;
             seatStatus.className = 'ok';
         } else {
             seatStatus.textContent = `✗ ${error}`;
@@ -101,6 +102,7 @@ btnCopy.addEventListener('click', () => {
 btnClear.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'clear_entries' });
     searchInput.value = '';
+    seatSent = 0; seatOk = 0;
     render({ entries: [], callId: callIdSpan.textContent !== '—' ? callIdSpan.textContent : null });
     seatStatus.textContent = '';
 });

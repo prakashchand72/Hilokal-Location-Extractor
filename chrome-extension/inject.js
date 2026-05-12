@@ -1,5 +1,21 @@
 // Declared as world:"MAIN" in manifest — runs synchronously at document_start
 // in the page's own JS context, before any page script can create a WebSocket.
+
+// Intercept fetch to read the call ID from live group-call API requests
+// (e.g. /group-call/{id}/emoji). Bound to window to avoid "Illegal invocation".
+const OriginalFetch = window.fetch.bind(window);
+window.fetch = function(input, init) {
+    try {
+        const url = typeof input === 'string' ? input
+                  : (input && typeof input.url === 'string') ? input.url : '';
+        const m = url.match(/\/group-calls?\/(\d+)\//);
+        if (m) window.postMessage({ type: '__HILOKAL_CALL_ID__', callId: m[1] }, '*');
+        const t = url.match(/\/table-share\/(\d+)\//);
+        if (t) window.postMessage({ type: '__HILOKAL_TABLE_ID__', tableId: t[1] }, '*');
+    } catch (_) {}
+    return OriginalFetch(input, init);
+};
+
 const OriginalWebSocket = window.WebSocket;
 
 function PatchedWebSocket(url, protocols) {

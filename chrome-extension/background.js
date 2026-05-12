@@ -1,20 +1,22 @@
 // In-memory state for race-free dedup.
 let entries = [];
 const seen = new Set();
-let currentCallId = null;
-let activeTabId = null;  // tab ID of the most recent hilokal content script message
+let currentCallId  = null;
+let currentTableId = null;
+let activeTabId = null;
 
 let initPromise = null;
 function ensureInit() {
     if (!initPromise) {
         initPromise = chrome.storage.session
-            .get(['entries', 'callId'])
-            .then(({ entries: saved = [], callId }) => {
+            .get(['entries', 'callId', 'tableId'])
+            .then(({ entries: saved = [], callId, tableId }) => {
                 for (const e of saved) {
                     const key = e.name + '|' + e.city;
                     if (!seen.has(key)) { seen.add(key); entries.push(e); }
                 }
-                if (callId) currentCallId = callId;
+                if (callId)  currentCallId  = callId;
+                if (tableId) currentTableId = tableId;
                 if (entries.length) setBadge(entries.length);
             });
     }
@@ -28,7 +30,6 @@ function setBadge(n) {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
-    // Track which tab the user is currently active on
     if (sender.tab && sender.tab.id) activeTabId = sender.tab.id;
 
     if (msg.action === 'gcc_entry') {
@@ -54,6 +55,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return false;
     }
 
+    if (msg.action === 'set_table_id') {
+        ensureInit().then(() => {
+            if (msg.tableId && msg.tableId !== currentTableId) {
+                currentTableId = msg.tableId;
+                chrome.storage.session.set({ tableId: currentTableId });
+            }
+        });
+        return false;
+    }
+
     if (msg.action === 'get_entries') {
         ensureInit().then(() => sendResponse({ entries, callId: currentCallId }));
         return true;
@@ -71,26 +82,51 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'seat_request') {
         ensureInit().then(() => {
             if (!currentCallId) {
-                sendResponse({ ok: false, error: 'No group call ID detected yet. Navigate to a group call page first.' });
+                sendResponse({ ok: false, error: 'No call ID detected yet — join a group call first, then try again.' });
                 return;
             }
-            if (!activeTabId) {
-                sendResponse({ ok: false, error: 'No active Hilokal tab found. Make sure the Hilokal tab is open.' });
-                return;
-            }
-            // Delegate the actual fetch to content.js, which runs inside
-            // www.hilokal.com and carries the page's full cookie context.
-            chrome.tabs.sendMessage(
-                activeTabId,
-                { action: 'do_seat_request', callId: currentCallId },
-                (result) => {
-                    if (chrome.runtime.lastError) {
-                        sendResponse({ ok: false, error: 'Could not reach Hilokal tab — try refreshing it.' });
-                    } else {
-                        sendResponse(result ? { ...result, callId: currentCallId } : { ok: false, error: 'No response from page.' });
-                    }
+
+            const getCookie = (url) =>
+                new Promise(r => chrome.cookies.get({ url, name: 'jwt' }, r));
+            const getAllCookies = () =>
+                new Promise(r => chrome.cookies.getAll({ name: 'jwt' },
+                    cs => r((cs || []).find(c => c.domain.includes('hilokal')) || null)));
+
+            Promise.all([
+                getCookie('https://www.hilokal.com'),
+                getCookie('https://hilokal.com'),
+                getCookie('https://elb.hilokal.com'),
+                getAllCookies(),
+            ]).then(results => {
+                const cookie = results.find(Boolean);
+                if (!cookie) {
+                    sendResponse({ ok: false, error: 'Not logged in — jwt cookie not found.' });
+                    return;
                 }
-            );
+
+                fetch(`https://elb.hilokal.com/group-calls/${currentCallId}/seat-request`, {
+                    method: 'PUT',
+                    headers: {
+                        'accept':       'application/json',
+                        'content-type': 'application/json',
+                        'cookie':       `jwt=${cookie.value}`,
+                        'origin':       'https://www.hilokal.com',
+                        'referer':      'https://www.hilokal.com/',
+                    },
+                    body: '{}',
+                })
+                .then(async (res) => {
+                    const text = await res.text().catch(() => '');
+                    if (res.ok) {
+                        sendResponse({ ok: true, callId: currentCallId });
+                    } else if (res.status === 401 || res.status === 403) {
+                        sendResponse({ ok: false, error: 'Not authorised — are you logged in to Hilokal?' });
+                    } else {
+                        sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
+                    }
+                })
+                .catch(err => sendResponse({ ok: false, error: String(err) }));
+            });
         });
         return true;
     }
