@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hilokal Locations</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      min-width: 300px;
+      max-width: 420px;
+      background: #fff;
+      color: #111;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    header h1 { font-size: 14px; font-weight: 600; }
+    #count { font-size: 12px; color: #888; }
+
+    /* Seat request bar */
+    #seat-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #e5e5e5;
+      background: #f8f8f8;
+    }
+    #call-id-label { font-size: 12px; color: #666; flex: 1; }
+    #call-id-label span { font-weight: 600; color: #333; }
+    #btn-seat {
+      font-size: 12px;
+      padding: 5px 12px;
+      border: 1px solid #4285f4;
+      border-radius: 4px;
+      background: #4285f4;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #btn-seat:hover { background: #3367d6; border-color: #3367d6; }
+    #btn-seat:disabled { background: #aaa; border-color: #aaa; cursor: default; }
+    #seat-status {
+      font-size: 11px;
+      padding: 4px 14px 0;
+      min-height: 16px;
+    }
+    #seat-status.ok  { color: #2a9d2a; }
+    #seat-status.err { color: #c00; }
+
+    #list {
+      list-style: none;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    #list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 8px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    #list li:last-child { border-bottom: none; }
+    .name { font-weight: 500; }
+    .city { color: #555; margin-left: 8px; flex-shrink: 0; }
+    .time { font-size: 11px; color: #bbb; margin-left: auto; padding-left: 10px; flex-shrink: 0; }
+    #empty {
+      padding: 24px 14px;
+      font-size: 13px;
+      color: #aaa;
+      text-align: center;
+    }
+    footer {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid #e5e5e5;
+    }
+    footer button {
+      flex: 1;
+      font-size: 12px;
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fafafa;
+      cursor: pointer;
+    }
+    footer button:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hilokal Location Extractor</h1>
+    <span id="count"></span>
+  </header>
+
+  <div id="seat-bar">
+    <span id="call-id-label">Call ID: <span id="call-id">—</span></span>
+    <button id="btn-seat">Request Seat</button>
+  </div>
+  <div id="seat-status"></div>
+
+  <ul id="list"></ul>
+  <p id="empty">No entries yet.<br>Join a group call on Hilokal.</p>
+
+  <footer>
+    <button id="btn-copy">Copy CSV</button>
+    <button id="btn-clear">Clear</button>
+  </footer>
+  <script src="popup.js"></script>
+</body>
+</html>

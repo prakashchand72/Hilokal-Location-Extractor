@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Hilokal Location Extractor",
+  "version": "1.1",
+  "description": "Extracts participant names/cities from Hilokal group calls and sends seat requests.",
+  "permissions": ["storage", "cookies", "tabs"],
+  "host_permissions": ["https://*.hilokal.com/*", "https://elb.hilokal.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Hilokal Locations"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.hilokal.com/*"],
+      "js": ["inject.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://*.hilokal.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
