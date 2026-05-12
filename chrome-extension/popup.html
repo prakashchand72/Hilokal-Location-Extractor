@@ -71,6 +71,22 @@
     .name { font-weight: 500; }
     .city { color: #555; margin-left: 8px; flex-shrink: 0; }
     .time { font-size: 11px; color: #bbb; margin-left: auto; padding-left: 10px; flex-shrink: 0; }
+    #search-bar {
+      padding: 8px 14px;
+      border-bottom: 1px solid #e5e5e5;
+      display: none;
+    }
+    #search-bar.visible { display: block; }
+    #search {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 13px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      outline: none;
+      background: #fafafa;
+    }
+    #search:focus { border-color: #4285f4; background: #fff; }
     #empty {
       padding: 24px 14px;
       font-size: 13px;
@@ -107,8 +123,12 @@
   </div>
   <div id="seat-status"></div>
 
+  <div id="search-bar">
+    <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">
+  </div>
+
   <ul id="list"></ul>
-  <p id="empty">No entries yet.<br>Join a group call on Hilokal.</p>
+  <p id="empty"></p>
 
   <footer>
     <button id="btn-copy">Copy CSV</button>

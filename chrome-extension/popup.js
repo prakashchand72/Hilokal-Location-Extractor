@@ -6,26 +6,43 @@ const btnSeat    = document.getElementById('btn-seat');
 const seatStatus = document.getElementById('seat-status');
 const btnCopy    = document.getElementById('btn-copy');
 const btnClear   = document.getElementById('btn-clear');
+const searchBar  = document.getElementById('search-bar');
+const searchInput = document.getElementById('search');
+
+let allEntries = [];
 
 function esc(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function render({ entries = [], callId = null }) {
-    // Call ID bar
-    callIdSpan.textContent = callId || '—';
-    btnSeat.disabled = !callId;
+function applyFilter() {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = q
+        ? allEntries.filter(e => e.name.toLowerCase().includes(q))
+        : allEntries;
 
-    // Participants list
     list.innerHTML = '';
-    if (!entries.length) {
+
+    if (!allEntries.length) {
+        empty.textContent = 'No entries yet. Join a group call on Hilokal.';
         empty.style.display = 'block';
         count.textContent = '';
         return;
     }
+
+    if (!filtered.length) {
+        empty.textContent = `No match for "${searchInput.value}"`;
+        empty.style.display = 'block';
+        count.textContent = `0 of ${allEntries.length}`;
+        return;
+    }
+
     empty.style.display = 'none';
-    count.textContent = `${entries.length} participant${entries.length !== 1 ? 's' : ''}`;
-    entries.forEach(({ name, city, ts }) => {
+    count.textContent = q
+        ? `${filtered.length} of ${allEntries.length}`
+        : `${allEntries.length} participant${allEntries.length !== 1 ? 's' : ''}`;
+
+    filtered.forEach(({ name, city, ts }) => {
         const li = document.createElement('li');
         li.innerHTML =
             `<span class="name">${esc(name)}</span>` +
@@ -34,6 +51,16 @@ function render({ entries = [], callId = null }) {
         list.appendChild(li);
     });
 }
+
+function render({ entries = [], callId = null }) {
+    callIdSpan.textContent = callId || '—';
+    btnSeat.disabled = !callId;
+    allEntries = entries;
+    searchBar.classList.toggle('visible', entries.length > 0);
+    applyFilter();
+}
+
+searchInput.addEventListener('input', applyFilter);
 
 // Load on open
 chrome.runtime.sendMessage({ action: 'get_entries' }, render);
@@ -73,6 +100,7 @@ btnCopy.addEventListener('click', () => {
 // Clear
 btnClear.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'clear_entries' });
+    searchInput.value = '';
     render({ entries: [], callId: callIdSpan.textContent !== '—' ? callIdSpan.textContent : null });
     seatStatus.textContent = '';
 });
