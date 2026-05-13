@@ -46,6 +46,25 @@
     }
     #btn-seat:hover { background: #3367d6; border-color: #3367d6; }
     #btn-seat:disabled { background: #aaa; border-color: #aaa; cursor: default; }
+    #burst-bar {
+      display: flex;
+      gap: 6px;
+      padding: 6px 14px 8px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .btn-burst {
+      flex: 1;
+      font-size: 12px;
+      padding: 4px 0;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      color: #333;
+    }
+    .btn-burst:hover { background: #e8f0fe; border-color: #4285f4; color: #4285f4; }
+    .btn-burst:disabled { opacity: 0.5; cursor: default; }
     #seat-status {
       font-size: 11px;
       padding: 4px 14px 0;
@@ -119,7 +138,13 @@
 
   <div id="seat-bar">
     <span id="call-id-label">Call ID: <span id="call-id">—</span></span>
-    <button id="btn-seat">Request Seat</button>
+    <button id="btn-seat">Spam</button>
+  </div>
+  <div id="burst-bar">
+    <button class="btn-burst" data-n="1">Send ×1</button>
+    <button class="btn-burst" data-n="5">Send ×5</button>
+    <button class="btn-burst" data-n="10">Send ×10</button>
+    <button class="btn-burst" data-n="20">Send ×20</button>
   </div>
   <div id="seat-status"></div>
 

@@ -20,19 +20,4 @@ window.addEventListener('message', (event) => {
     }
 });
 
-// Extract call ID from URL (works when it's in the path)
-function reportUrlCallId() {
-    const m = location.pathname.match(/\/(\d{5,})/);
-    if (m) safeSend({ action: 'set_call_id', callId: m[1] });
-}
-reportUrlCallId();
-
-// Watch for SPA navigation
-let lastHref = location.href;
-new MutationObserver(() => {
-    if (location.href !== lastHref) {
-        lastHref = location.href;
-        reportUrlCallId();
-    }
-}).observe(document, { subtree: true, childList: true });
 

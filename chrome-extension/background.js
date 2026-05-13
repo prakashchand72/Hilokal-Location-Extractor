@@ -28,6 +28,65 @@ function setBadge(n) {
     chrome.action.setBadgeBackgroundColor({ color: '#4285f4' });
 }
 
+// ── Seat request core ────────────────────────────────────────────────────────
+
+function seatFetch(callId) {
+    return fetch(`https://elb.hilokal.com/group-calls/${callId}/seat-request`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+            'accept':       'application/json',
+            'content-type': 'application/json',
+        },
+        referrer: 'https://www.hilokal.com/',
+        body: '{}',
+    }).then(async (res) => {
+        const text = await res.text().catch(() => '');
+        if (res.ok) return { ok: true };
+        if (res.status === 401 || res.status === 403) return { ok: false, error: 'Not authorised' };
+        return { ok: false, error: `Server ${res.status}: ${text}` };
+    }).catch(err => ({ ok: false, error: String(err) }));
+}
+
+// ── Spam state (lives in SW, survives popup closing) ─────────────────────────
+
+let spamTimer   = null;
+let spamCount   = 0;
+let spamRunning = false;
+
+// Keep the service worker alive while spamming by touching storage every 20s.
+let keepAliveTimer = null;
+function startKeepAlive() {
+    keepAliveTimer = setInterval(() => chrome.storage.session.set({ _ka: Date.now() }), 20000);
+}
+function stopKeepAlive() {
+    if (keepAliveTimer) { clearInterval(keepAliveTimer); keepAliveTimer = null; }
+}
+
+async function spamCycle() {
+    if (!spamRunning) return;
+    if (!currentCallId) { spamTimer = setTimeout(spamCycle, 1000); return; }
+    const res = await seatFetch(currentCallId);
+    if (res.ok) spamCount++;
+    if (spamRunning) spamTimer = setTimeout(spamCycle, 0);
+}
+
+function startSpam() {
+    if (spamRunning) return;
+    spamRunning = true;
+    spamCount   = 0;
+    startKeepAlive();
+    spamCycle();
+}
+
+function stopSpam() {
+    spamRunning = false;
+    if (spamTimer) { clearTimeout(spamTimer); spamTimer = null; }
+    stopKeepAlive();
+}
+
+// ── Message handler ───────────────────────────────────────────────────────────
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     if (sender.tab && sender.tab.id) activeTabId = sender.tab.id;
@@ -80,54 +139,53 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 
     if (msg.action === 'seat_request') {
-        ensureInit().then(() => {
+        ensureInit().then(async () => {
             if (!currentCallId) {
-                sendResponse({ ok: false, error: 'No call ID detected yet — join a group call first, then try again.' });
+                sendResponse({ ok: false, error: 'No call ID detected yet — join a group call first.' });
                 return;
             }
-
-            const getCookie = (url) =>
-                new Promise(r => chrome.cookies.get({ url, name: 'jwt' }, r));
-            const getAllCookies = () =>
-                new Promise(r => chrome.cookies.getAll({ name: 'jwt' },
-                    cs => r((cs || []).find(c => c.domain.includes('hilokal')) || null)));
-
-            Promise.all([
-                getCookie('https://www.hilokal.com'),
-                getCookie('https://hilokal.com'),
-                getCookie('https://elb.hilokal.com'),
-                getAllCookies(),
-            ]).then(results => {
-                const cookie = results.find(Boolean);
-                if (!cookie) {
-                    sendResponse({ ok: false, error: 'Not logged in — jwt cookie not found.' });
-                    return;
-                }
-
-                fetch(`https://elb.hilokal.com/group-calls/${currentCallId}/seat-request`, {
-                    method: 'PUT',
-                    headers: {
-                        'accept':       'application/json',
-                        'content-type': 'application/json',
-                        'cookie':       `jwt=${cookie.value}`,
-                        'origin':       'https://www.hilokal.com',
-                        'referer':      'https://www.hilokal.com/',
-                    },
-                    body: '{}',
-                })
-                .then(async (res) => {
-                    const text = await res.text().catch(() => '');
-                    if (res.ok) {
-                        sendResponse({ ok: true, callId: currentCallId });
-                    } else if (res.status === 401 || res.status === 403) {
-                        sendResponse({ ok: false, error: 'Not authorised — are you logged in to Hilokal?' });
-                    } else {
-                        sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
-                    }
-                })
-                .catch(err => sendResponse({ ok: false, error: String(err) }));
-            });
+            const result = await seatFetch(currentCallId);
+            sendResponse({ ...result, callId: currentCallId });
         });
+        return true;
+    }
+
+    if (msg.action === 'send_burst') {
+        ensureInit().then(async () => {
+            if (!currentCallId) {
+                sendResponse({ ok: false, error: 'No call ID — join a group call first.' });
+                return;
+            }
+            let sent = 0;
+            for (let i = 0; i < msg.count; i++) {
+                const res = await seatFetch(currentCallId);
+                if (res.ok) sent++;
+            }
+            sendResponse({ ok: true, sent, total: msg.count });
+        });
+        return true;
+    }
+
+    if (msg.action === 'start_spam') {
+        ensureInit().then(() => {
+            if (!currentCallId) {
+                sendResponse({ ok: false, error: 'No call ID detected yet — join a group call first.' });
+                return;
+            }
+            startSpam();
+            sendResponse({ ok: true });
+        });
+        return true;
+    }
+
+    if (msg.action === 'stop_spam') {
+        stopSpam();
+        sendResponse({ ok: true, count: spamCount });
+        return true;
+    }
+
+    if (msg.action === 'spam_status') {
+        sendResponse({ running: spamRunning, count: spamCount });
         return true;
     }
 });
