@@ -73,6 +73,65 @@
     #seat-status.ok  { color: #2a9d2a; }
     #seat-status.err { color: #c00; }
 
+    /* Birthday bar */
+    #birthday-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #e5e5e5;
+      background: #fafafa;
+    }
+    #birthday-bar label { font-size: 12px; color: #666; flex-shrink: 0; }
+    #bday-input {
+      flex: 1;
+      font-size: 12px;
+      padding: 4px 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      outline: none;
+      min-width: 0;
+    }
+    #bday-input:focus { border-color: #4285f4; }
+    .btn-bday {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #btn-bday-set    { background: #4285f4; color: #fff; border: 1px solid #4285f4; }
+    #btn-bday-set:hover    { background: #3367d6; border-color: #3367d6; }
+    #btn-bday-remove { background: #fff; color: #c00; border: 1px solid #c00; }
+    #btn-bday-remove:hover { background: #fff0f0; }
+    #bday-flicker-bar {
+      padding: 6px 14px 8px;
+      background: #fafafa;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    #btn-bday-flicker {
+      width: 100%;
+      font-size: 12px;
+      padding: 5px 0;
+      border: 1px solid #f59e0b;
+      border-radius: 4px;
+      background: #fff;
+      color: #b45309;
+      cursor: pointer;
+    }
+    #btn-bday-flicker:hover  { background: #fffbeb; }
+    #btn-bday-flicker.active { background: #f59e0b; color: #fff; border-color: #d97706; }
+    #btn-bday-flicker.active:hover { background: #d97706; border-color: #b45309; }
+    #bday-status {
+      font-size: 11px;
+      padding: 3px 14px 4px;
+      min-height: 15px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    #bday-status.ok  { color: #2a9d2a; }
+    #bday-status.err { color: #c00; }
+
     #list {
       list-style: none;
       max-height: 320px;
@@ -147,6 +206,17 @@
     <button class="btn-burst" data-n="20">Send ×20</button>
   </div>
   <div id="seat-status"></div>
+
+  <div id="birthday-bar">
+    <label for="bday-input">Birthday:</label>
+    <input type="date" id="bday-input">
+    <button type="button" class="btn-bday" id="btn-bday-set">Set</button>
+    <button type="button" class="btn-bday" id="btn-bday-remove">Remove</button>
+  </div>
+  <div id="bday-flicker-bar">
+    <button type="button" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
+  </div>
+  <div id="bday-status"></div>
 
   <div id="search-bar">
     <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">

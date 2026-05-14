@@ -155,6 +155,94 @@ btnCopy.addEventListener('click', () => {
     });
 });
 
+// ── Birthday ───────────────────────────────────────────────────────────────────
+
+const bdayInput  = document.getElementById('bday-input');
+const btnBdaySet = document.getElementById('btn-bday-set');
+const btnBdayRem = document.getElementById('btn-bday-remove');
+const bdayStatus = document.getElementById('bday-status');
+
+// Default the date picker to today
+bdayInput.value = new Date().toISOString().slice(0, 10);
+
+function setBdayUI(ok, msg) {
+    bdayStatus.textContent = msg;
+    bdayStatus.className = ok ? 'ok' : 'err';
+    setTimeout(() => { bdayStatus.textContent = ''; bdayStatus.className = ''; }, 3000);
+}
+
+btnBdaySet.addEventListener('click', () => {
+    const date = bdayInput.value;
+    if (!date) { setBdayUI(false, 'Pick a date first.'); return; }
+    btnBdaySet.disabled = true;
+    chrome.runtime.sendMessage({ action: 'set_birthday', birthday: date }, ({ ok, error }) => {
+        btnBdaySet.disabled = false;
+        setBdayUI(ok, ok ? `Birthday set to ${date}` : `✗ ${error}`);
+    });
+});
+
+btnBdayRem.addEventListener('click', () => {
+    btnBdayRem.disabled = true;
+    chrome.runtime.sendMessage({ action: 'remove_birthday' }, ({ ok, error }) => {
+        btnBdayRem.disabled = false;
+        setBdayUI(ok, ok ? 'Birthday removed' : `✗ ${error}`);
+    });
+});
+
+// ── Birthday flicker ──────────────────────────────────────────────────────────
+
+const btnFlicker = document.getElementById('btn-bday-flicker');
+let flickerPollTimer = null;
+
+function setFlickerUI(running, count) {
+    if (running) {
+        btnFlicker.textContent = `Stop Flicker (${count} toggles)`;
+        btnFlicker.classList.add('active');
+        bdayStatus.textContent = `Flickering… ${count} toggles`;
+        bdayStatus.className = 'ok';
+    } else {
+        btnFlicker.textContent = 'Flicker (Set ↔ Unset)';
+        btnFlicker.classList.remove('active');
+    }
+}
+
+function startFlickerPoll() {
+    if (flickerPollTimer) return;
+    flickerPollTimer = setInterval(() => {
+        chrome.runtime.sendMessage({ action: 'flicker_status' }, ({ running, count }) => {
+            setFlickerUI(running, count);
+            if (!running) stopFlickerPoll();
+        });
+    }, 600);
+}
+
+function stopFlickerPoll() {
+    if (flickerPollTimer) { clearInterval(flickerPollTimer); flickerPollTimer = null; }
+}
+
+// Sync flicker state when popup opens
+chrome.runtime.sendMessage({ action: 'flicker_status' }, ({ running, count }) => {
+    setFlickerUI(running, count);
+    if (running) startFlickerPoll();
+});
+
+btnFlicker.addEventListener('click', () => {
+    if (flickerPollTimer) {
+        stopFlickerPoll();
+        chrome.runtime.sendMessage({ action: 'stop_flicker' }, ({ count }) => {
+            setFlickerUI(false, 0);
+            bdayStatus.textContent = `Flicker stopped — ${count} toggles`;
+            bdayStatus.className = '';
+        });
+    } else {
+        chrome.runtime.sendMessage({ action: 'start_flicker' }, ({ ok, error }) => {
+            if (!ok) { setBdayUI(false, `✗ ${error}`); return; }
+            setFlickerUI(true, 0);
+            startFlickerPoll();
+        });
+    }
+});
+
 // Clear
 btnClear.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'clear_entries' });

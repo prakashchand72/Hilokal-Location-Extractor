@@ -85,6 +85,55 @@ function stopSpam() {
     stopKeepAlive();
 }
 
+// ── Birthday flicker (set ↔ unset loop, lives in SW) ─────────────────────────
+
+const FLICKER_OLD_DATE   = '2001-06-24';
+
+let flickerTimer   = null;
+let flickerCount   = 0;
+let flickerRunning = false;
+let flickerToday   = null; // set at start time
+let flickerPhase   = true; // true = today, false = old date
+
+let flickerKeepAlive = null;
+function startFlickerKeepAlive() {
+    flickerKeepAlive = setInterval(() => chrome.storage.session.set({ _fka: Date.now() }), 20000);
+}
+function stopFlickerKeepAlive() {
+    if (flickerKeepAlive) { clearInterval(flickerKeepAlive); flickerKeepAlive = null; }
+}
+
+async function flickerCycle() {
+    if (!flickerRunning) return;
+    const date = flickerPhase ? flickerToday : FLICKER_OLD_DATE;
+    flickerPhase = !flickerPhase;
+    await fetch('https://elb.hilokal.com/users/me', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+        referrer: 'https://www.hilokal.com/',
+        body: JSON.stringify({ birthday: date }),
+    }).catch(() => {});
+    flickerCount++;
+    if (flickerRunning) flickerTimer = setTimeout(flickerCycle, 0);
+}
+
+function startFlicker() {
+    if (flickerRunning) return;
+    flickerToday   = new Date().toISOString().slice(0, 10);
+    flickerRunning = true;
+    flickerCount   = 0;
+    flickerPhase    = true;
+    startFlickerKeepAlive();
+    flickerCycle();
+}
+
+function stopFlicker() {
+    flickerRunning = false;
+    if (flickerTimer) { clearTimeout(flickerTimer); flickerTimer = null; }
+    stopFlickerKeepAlive();
+}
+
 // ── Message handler ───────────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -186,6 +235,43 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     if (msg.action === 'spam_status') {
         sendResponse({ running: spamRunning, count: spamCount });
+        return true;
+    }
+
+    if (msg.action === 'start_flicker') {
+        startFlicker();
+        sendResponse({ ok: true });
+        return true;
+    }
+
+    if (msg.action === 'stop_flicker') {
+        stopFlicker();
+        sendResponse({ ok: true, count: flickerCount });
+        return true;
+    }
+
+    if (msg.action === 'flicker_status') {
+        sendResponse({ running: flickerRunning, count: flickerCount });
+        return true;
+    }
+
+    if (msg.action === 'set_birthday' || msg.action === 'remove_birthday') {
+        const body = msg.action === 'set_birthday' ? JSON.stringify({ birthday: msg.birthday }) : '{}';
+        fetch('https://elb.hilokal.com/users/me', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'accept':       'application/json',
+                'content-type': 'application/json',
+            },
+            referrer: 'https://www.hilokal.com/',
+            body,
+        }).then(async (res) => {
+            const text = await res.text().catch(() => '');
+            if (res.ok) { sendResponse({ ok: true }); return; }
+            if (res.status === 401 || res.status === 403) { sendResponse({ ok: false, error: 'Not authorised' }); return; }
+            sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
+        }).catch(err => sendResponse({ ok: false, error: String(err) }));
         return true;
     }
 });
