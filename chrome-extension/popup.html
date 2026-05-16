@@ -132,6 +132,39 @@
     #bday-status.ok  { color: #2a9d2a; }
     #bday-status.err { color: #c00; }
 
+    /* Image upload bar */
+    #img-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid #e5e5e5;
+      background: #f0f7ff;
+    }
+    #img-bar label { font-size: 12px; color: #555; flex-shrink: 0; }
+    #img-file { flex: 1; font-size: 11px; min-width: 0; }
+    #btn-img-upload {
+      font-size: 12px;
+      padding: 5px 12px;
+      border: 1px solid #0a7c3e;
+      border-radius: 4px;
+      background: #0a7c3e;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #btn-img-upload:hover { background: #085c2e; border-color: #085c2e; }
+    #btn-img-upload:disabled { background: #aaa; border-color: #aaa; cursor: default; }
+    #img-status {
+      font-size: 11px;
+      padding: 3px 14px 4px;
+      min-height: 15px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    #img-status.ok  { color: #2a9d2a; }
+    #img-status.err { color: #c00; }
+
     #list {
       list-style: none;
       max-height: 320px;
@@ -217,6 +250,14 @@
     <button type="button" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
   </div>
   <div id="bday-status"></div>
+
+  <!-- Image upload -->
+  <div id="img-bar">
+    <label for="img-file">📷</label>
+    <input type="file" id="img-file" accept="image/*">
+    <button id="btn-img-upload">Send to Chat</button>
+  </div>
+  <div id="img-status"></div>
 
   <div id="search-bar">
     <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">

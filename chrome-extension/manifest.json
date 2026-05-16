@@ -4,7 +4,7 @@
   "version": "1.1",
   "description": "Extracts participant names/cities from Hilokal group calls and sends seat requests.",
   "permissions": ["storage", "cookies", "tabs"],
-  "host_permissions": ["https://hilokal.com/*", "https://*.hilokal.com/*"],
+  "host_permissions": ["https://hilokal.com/*", "https://*.hilokal.com/*", "https://s3.ap-northeast-2.amazonaws.com/*"],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Hilokal Locations"

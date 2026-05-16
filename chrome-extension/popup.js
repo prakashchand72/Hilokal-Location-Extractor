@@ -243,6 +243,73 @@ btnFlicker.addEventListener('click', () => {
     }
 });
 
+// ── Image upload ──────────────────────────────────────────────────────────────
+
+const imgFileInput = document.getElementById('img-file');
+const btnImgUpload = document.getElementById('btn-img-upload');
+const imgStatus    = document.getElementById('img-status');
+
+function setImgStatus(ok, msg) {
+    imgStatus.textContent = msg;
+    imgStatus.className = ok ? 'ok' : 'err';
+    if (ok) setTimeout(() => { imgStatus.textContent = ''; imgStatus.className = ''; }, 4000);
+}
+
+btnImgUpload.addEventListener('click', async () => {
+    const file   = imgFileInput.files[0];
+    const callId = callIdSpan.textContent;
+
+    if (!file)                    { setImgStatus(false, 'Pick an image first.'); return; }
+    if (!callId || callId === '—') { setImgStatus(false, 'No call ID — join a table first.'); return; }
+
+    btnImgUpload.disabled = true;
+    setImgStatus(true, 'Getting upload credentials…');
+
+    try {
+        // Step 1: get S3 presigned credentials
+        const authRes = await fetch('https://elb.hilokal.com/s3-upload-auth', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+            referrer: 'https://www.hilokal.com/',
+            body: JSON.stringify({ pathname: file.name, contentType: file.type }),
+        });
+        if (!authRes.ok) throw new Error(`Auth failed: ${authRes.status}`);
+        const auth = await authRes.json();
+
+        // Step 2: upload file to S3
+        setImgStatus(true, 'Uploading image…');
+        const form = new FormData();
+        Object.entries(auth.fields).forEach(([k, v]) => form.append(k, v));
+        form.append('file', file);
+
+        const s3Res = await fetch(auth.url, { method: 'POST', body: form });
+        if (s3Res.status !== 204) throw new Error(`S3 upload failed: ${s3Res.status}`);
+
+        const imageUrl = `${auth.url}/${auth.fields.key}`;
+
+        // Step 3: post image message to table chat
+        setImgStatus(true, 'Sending to chat…');
+        const msgRes = await fetch(`https://elb.hilokal.com/group-call/${callId}/messages`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+            referrer: 'https://www.hilokal.com/',
+            body: JSON.stringify({ body: '', type: 'image', parentId: null, image: imageUrl, imageWidth: 1200, imageHeight: 1800 }),
+        });
+        if (!msgRes.ok) throw new Error(`Message failed: ${msgRes.status}`);
+
+        setImgStatus(true, '✓ Image sent to chat!');
+        imgFileInput.value = '';
+    } catch (err) {
+        setImgStatus(false, `✗ ${err.message}`);
+    } finally {
+        btnImgUpload.disabled = false;
+    }
+});
+
+// ── Clear ─────────────────────────────────────────────────────────────────────
+
 // Clear
 btnClear.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'clear_entries' });
