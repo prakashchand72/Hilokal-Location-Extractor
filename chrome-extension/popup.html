@@ -4,263 +4,286 @@
   <meta charset="utf-8">
   <title>Hilokal Locations</title>
   <style>
+    :root {
+      --bg:        #ffffff;
+      --bg-soft:   #f7f8fa;
+      --bg-sunk:   #f0f2f5;
+      --border:    #e6e8eb;
+      --text:      #1a1d21;
+      --text-dim:  #6b7280;
+      --text-mute: #9aa1ab;
+      --accent:    #4285f4;
+      --accent-d:  #3367d6;
+      --green:     #0a7c3e;
+      --red:       #d93636;
+      --amber:     #d97706;
+      --m:         #3b82f6;
+      --f:         #ec4899;
+      --shadow:    0 1px 2px rgba(0,0,0,.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#15171b; --bg-soft:#1c1f24; --bg-sunk:#22262c; --border:#2c313a;
+        --text:#e8eaed; --text-dim:#9aa1ab; --text-mute:#6b7280;
+        --shadow:0 1px 2px rgba(0,0,0,.3);
+      }
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: system-ui, sans-serif;
-      min-width: 300px;
-      max-width: 420px;
-      background: #fff;
-      color: #111;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px 10px;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    header h1 { font-size: 14px; font-weight: 600; }
-    #count { font-size: 12px; color: #888; }
-
-    /* Seat request bar */
-    #seat-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      border-bottom: 1px solid #e5e5e5;
-      background: #f8f8f8;
-    }
-    #call-id-label { font-size: 12px; color: #666; flex: 1; }
-    #call-id-label span { font-weight: 600; color: #333; }
-    #btn-seat {
-      font-size: 12px;
-      padding: 5px 12px;
-      border: 1px solid #4285f4;
-      border-radius: 4px;
-      background: #4285f4;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    #btn-seat:hover { background: #3367d6; border-color: #3367d6; }
-    #btn-seat:disabled { background: #aaa; border-color: #aaa; cursor: default; }
-    #burst-bar {
-      display: flex;
-      gap: 6px;
-      padding: 6px 14px 8px;
-      background: #f8f8f8;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    .btn-burst {
-      flex: 1;
-      font-size: 12px;
-      padding: 4px 0;
-      border: 1px solid #bbb;
-      border-radius: 4px;
-      background: #fff;
-      cursor: pointer;
-      color: #333;
-    }
-    .btn-burst:hover { background: #e8f0fe; border-color: #4285f4; color: #4285f4; }
-    .btn-burst:disabled { opacity: 0.5; cursor: default; }
-    #seat-status {
-      font-size: 11px;
-      padding: 4px 14px 0;
-      min-height: 16px;
-    }
-    #seat-status.ok  { color: #2a9d2a; }
-    #seat-status.err { color: #c00; }
-
-    /* Birthday bar */
-    #birthday-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border-bottom: 1px solid #e5e5e5;
-      background: #fafafa;
-    }
-    #birthday-bar label { font-size: 12px; color: #666; flex-shrink: 0; }
-    #bday-input {
-      flex: 1;
-      font-size: 12px;
-      padding: 4px 6px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      outline: none;
-      min-width: 0;
-    }
-    #bday-input:focus { border-color: #4285f4; }
-    .btn-bday {
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    #btn-bday-set    { background: #4285f4; color: #fff; border: 1px solid #4285f4; }
-    #btn-bday-set:hover    { background: #3367d6; border-color: #3367d6; }
-    #btn-bday-remove { background: #fff; color: #c00; border: 1px solid #c00; }
-    #btn-bday-remove:hover { background: #fff0f0; }
-    #bday-flicker-bar {
-      padding: 6px 14px 8px;
-      background: #fafafa;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    #btn-bday-flicker {
-      width: 100%;
-      font-size: 12px;
-      padding: 5px 0;
-      border: 1px solid #f59e0b;
-      border-radius: 4px;
-      background: #fff;
-      color: #b45309;
-      cursor: pointer;
-    }
-    #btn-bday-flicker:hover  { background: #fffbeb; }
-    #btn-bday-flicker.active { background: #f59e0b; color: #fff; border-color: #d97706; }
-    #btn-bday-flicker.active:hover { background: #d97706; border-color: #b45309; }
-    #bday-status {
-      font-size: 11px;
-      padding: 3px 14px 4px;
-      min-height: 15px;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    #bday-status.ok  { color: #2a9d2a; }
-    #bday-status.err { color: #c00; }
-
-    /* Image upload bar */
-    #img-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      border-bottom: 1px solid #e5e5e5;
-      background: #f0f7ff;
-    }
-    #img-bar label { font-size: 12px; color: #555; flex-shrink: 0; }
-    #img-file { flex: 1; font-size: 11px; min-width: 0; }
-    #btn-img-upload {
-      font-size: 12px;
-      padding: 5px 12px;
-      border: 1px solid #0a7c3e;
-      border-radius: 4px;
-      background: #0a7c3e;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    #btn-img-upload:hover { background: #085c2e; border-color: #085c2e; }
-    #btn-img-upload:disabled { background: #aaa; border-color: #aaa; cursor: default; }
-    #img-status {
-      font-size: 11px;
-      padding: 3px 14px 4px;
-      min-height: 15px;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    #img-status.ok  { color: #2a9d2a; }
-    #img-status.err { color: #c00; }
-
-    #list {
-      list-style: none;
-      max-height: 320px;
-      overflow-y: auto;
-    }
-    #list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 8px 14px;
-      border-bottom: 1px solid #f0f0f0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      width: 380px;
+      background: var(--bg);
+      color: var(--text);
       font-size: 13px;
+      -webkit-font-smoothing: antialiased;
     }
-    #list li:last-child { border-bottom: none; }
-    .name { font-weight: 500; }
-    .city { color: #555; margin-left: 8px; flex-shrink: 0; }
-    .time { font-size: 11px; color: #bbb; margin-left: auto; padding-left: 10px; flex-shrink: 0; }
-    #search-bar {
-      padding: 8px 14px;
-      border-bottom: 1px solid #e5e5e5;
-      display: none;
+
+    /* ── Header ── */
+    header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-soft);
     }
+    .logo { font-size: 16px; }
+    header h1 { font-size: 13.5px; font-weight: 650; letter-spacing: -.2px; }
+    #count {
+      margin-left: auto; font-size: 11.5px; font-weight: 600;
+      color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+      padding: 2px 9px; border-radius: 999px;
+    }
+
+    /* ── Sections ── */
+    .section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .section-soft { background: var(--bg-soft); }
+    .label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; }
+
+    /* ── Call / seat ── */
+    .seat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    #call-id-label { font-size: 12px; color: var(--text-dim); flex: 1; }
+    #call-id { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    #call-id.live { color: var(--green); }
+    #btn-seat {
+      font-size: 12px; font-weight: 600; padding: 6px 14px;
+      border: none; border-radius: 7px; background: var(--accent); color: #fff;
+      cursor: pointer; white-space: nowrap; transition: background .12s;
+    }
+    #btn-seat:hover:not(:disabled) { background: var(--accent-d); }
+    #btn-seat:disabled { background: var(--text-mute); cursor: default; opacity: .7; }
+    #burst-bar { display: flex; gap: 6px; }
+    .btn-burst {
+      flex: 1; font-size: 12px; font-weight: 500; padding: 6px 0;
+      border: 1px solid var(--border); border-radius: 7px;
+      background: var(--bg); color: var(--text); cursor: pointer; transition: .12s;
+    }
+    .btn-burst:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+    .btn-burst:disabled { opacity: .45; cursor: default; }
+    #seat-status { font-size: 11.5px; min-height: 15px; margin-top: 7px; color: var(--text-dim); }
+    #seat-status.ok { color: var(--green); } #seat-status.err { color: var(--red); }
+
+    /* ── Collapsible tools ── */
+    details.tools { border-bottom: 1px solid var(--border); background: var(--bg-soft); }
+    details.tools > summary {
+      list-style: none; cursor: pointer; padding: 10px 14px;
+      font-size: 12px; font-weight: 600; color: var(--text-dim);
+      display: flex; align-items: center; gap: 6px;
+    }
+    details.tools > summary::-webkit-details-marker { display: none; }
+    details.tools > summary::before { content: "▸"; font-size: 10px; transition: transform .15s; }
+    details.tools[open] > summary::before { transform: rotate(90deg); }
+    .tool-body { padding: 4px 14px 12px; }
+    .tool-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .tool-row:last-child { margin-bottom: 0; }
+    .tool-row label { font-size: 11.5px; color: var(--text-dim); flex-shrink: 0; }
+    input[type=date], input[type=file] {
+      flex: 1; min-width: 0; font-size: 12px; padding: 5px 7px;
+      border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);
+    }
+    input[type=file] { padding: 4px; }
+    .btn-s {
+      font-size: 12px; font-weight: 500; padding: 5px 11px; border-radius: 6px;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    }
+    .btn-fill  { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-fill:hover { background: var(--accent-d); }
+    .btn-danger { color: var(--red); border-color: var(--red); }
+    .btn-green { background: var(--green); border-color: var(--green); color: #fff; }
+    #btn-bday-flicker { width: 100%; color: var(--amber); border-color: var(--amber); }
+    #btn-bday-flicker.active { background: var(--amber); color: #fff; }
+    .mini-status { font-size: 11px; min-height: 14px; color: var(--text-dim); }
+    .mini-status.ok { color: var(--green); } .mini-status.err { color: var(--red); }
+    .divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* ── Search ── */
+    #search-bar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: none; }
     #search-bar.visible { display: block; }
     #search {
-      width: 100%;
-      padding: 6px 10px;
-      font-size: 13px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      outline: none;
-      background: #fafafa;
+      width: 100%; padding: 7px 11px; font-size: 13px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg-sunk); color: var(--text); outline: none;
     }
-    #search:focus { border-color: #4285f4; background: #fff; }
-    #empty {
-      padding: 24px 14px;
-      font-size: 13px;
-      color: #aaa;
-      text-align: center;
+    #search:focus { border-color: var(--accent); background: var(--bg); }
+    /* stats + filters */
+    #stats { margin-top: 8px; font-size: 11px; color: var(--text-dim); line-height: 1.5; font-variant-numeric: tabular-nums; }
+    #stats b { color: var(--text); font-weight: 700; }
+    #filters { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .fchip {
+      font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text-dim); cursor: pointer;
     }
-    footer {
-      display: flex;
-      gap: 8px;
-      padding: 10px 14px;
-      border-top: 1px solid #e5e5e5;
+    .fchip:hover { border-color: var(--accent); color: var(--accent); }
+    .fchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .chip.tchr { background: color-mix(in srgb, #06b6d4 18%, transparent); color: #0891b2; }
+    #list li { cursor: pointer; }
+    #list li.copied { background: color-mix(in srgb, var(--green) 12%, transparent); }
+    /* Room DNA bar (level distribution) */
+    #dna-wrap { margin-top: 8px; }
+    #dna { display: flex; height: 9px; border-radius: 5px; overflow: hidden; background: var(--bg-sunk); }
+    #dna .seg { height: 100%; }
+    #dna-legend { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 5px; font-size: 10px; color: var(--text-dim); }
+    #dna-legend span { display: inline-flex; align-items: center; gap: 3px; }
+    #dna-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+    /* Sort */
+    #sortrow { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--text-dim); }
+    #sort { font-size: 11px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
+    .hint { font-size: 10px; color: var(--text-mute); }
+    /* per-person action tray */
+    .rowmain { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .tray { display: none; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0 2px 46px; }
+    .tray.open { display: flex; }
+    .tbtn {
+      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer;
     }
+    .tbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .tbtn:disabled { opacity: .6; cursor: default; }
+    .tbtn.join { background: var(--green); border-color: var(--green); color: #fff; }
+    .tbtn.join:hover { filter: brightness(1.1); color: #fff; }
+    .tbtn.join.priv { background: var(--text-mute); border-color: var(--text-mute); cursor: default; }
+    .tray-status { font-size: 10.5px; color: var(--text-dim); }
+    .ploc { font-size: 11px; color: var(--green); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+    /* ── Participant list ── */
+    #list { list-style: none; max-height: 380px; overflow-y: auto; }
+    #list li {
+      display: flex; flex-direction: column; align-items: stretch;
+      padding: 9px 14px; border-bottom: 1px solid var(--border);
+    }
+    #list li:hover { background: var(--bg-soft); }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      object-fit: cover; background: var(--bg-sunk);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: #fff;
+    }
+    .pinfo { flex: 1; min-width: 0; }
+    .prow1 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+    .prow2 { display: flex; align-items: center; gap: 8px; margin-top: 2px; font-size: 11.5px; color: var(--text-dim); }
+    .city { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .langs { flex-shrink: 0; font-variant: small-caps; letter-spacing: .3px; }
+    .time { font-size: 10.5px; color: var(--text-mute); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+    /* chips */
+    .chip {
+      font-size: 10px; font-weight: 700; line-height: 1;
+      padding: 3px 6px; border-radius: 5px; flex-shrink: 0;
+      background: var(--bg-sunk); color: var(--text-dim);
+    }
+    .chip.g-m { background: color-mix(in srgb, var(--m) 16%, transparent); color: var(--m); }
+    .chip.g-f { background: color-mix(in srgb, var(--f) 16%, transparent); color: var(--f); }
+    .chip.g-o { background: color-mix(in srgb, #8b5cf6 16%, transparent); color: #8b5cf6; }
+    .chip.lvl { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+    .chip.host { background: color-mix(in srgb, var(--amber) 18%, transparent); color: var(--amber); }
+    .chip.new { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+    .chip.prem { background: color-mix(in srgb, #eab308 22%, transparent); color: #b8860b; }
+    .chip.bday { background: color-mix(in srgb, var(--f) 14%, transparent); }
+
+    #empty { padding: 28px 14px; font-size: 12.5px; color: var(--text-mute); text-align: center; }
+
+    /* ── Footer ── */
+    footer { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--bg-soft); }
     footer button {
-      flex: 1;
-      font-size: 12px;
-      padding: 5px 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: #fafafa;
-      cursor: pointer;
+      flex: 1; font-size: 12px; font-weight: 500; padding: 7px 10px;
+      border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); cursor: pointer;
     }
-    footer button:hover { background: #f0f0f0; }
+    footer button:hover { background: var(--bg-sunk); }
   </style>
 </head>
 <body>
   <header>
-    <h1>Hilokal Location Extractor</h1>
+    <span class="logo">🌍</span>
+    <h1>Hilokal Extractor</h1>
     <span id="count"></span>
   </header>
 
-  <div id="seat-bar">
-    <span id="call-id-label">Call ID: <span id="call-id">—</span></span>
-    <button id="btn-seat">Spam</button>
+  <!-- Seat requests -->
+  <div class="section section-soft">
+    <div class="seat-head">
+      <span id="call-id-label">Call ID: <span id="call-id">—</span></span>
+      <button id="btn-seat">Request Seat</button>
+    </div>
+    <div id="burst-bar">
+      <button class="btn-burst" data-n="1">×1</button>
+      <button class="btn-burst" data-n="5">×5</button>
+      <button class="btn-burst" data-n="10">×10</button>
+      <button class="btn-burst" data-n="20">×20</button>
+    </div>
+    <div id="seat-status"></div>
   </div>
-  <div id="burst-bar">
-    <button class="btn-burst" data-n="1">Send ×1</button>
-    <button class="btn-burst" data-n="5">Send ×5</button>
-    <button class="btn-burst" data-n="10">Send ×10</button>
-    <button class="btn-burst" data-n="20">Send ×20</button>
-  </div>
-  <div id="seat-status"></div>
 
-  <div id="birthday-bar">
-    <label for="bday-input">Birthday:</label>
-    <input type="date" id="bday-input">
-    <button type="button" class="btn-bday" id="btn-bday-set">Set</button>
-    <button type="button" class="btn-bday" id="btn-bday-remove">Remove</button>
-  </div>
-  <div id="bday-flicker-bar">
-    <button type="button" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
-  </div>
-  <div id="bday-status"></div>
+  <!-- Secondary tools, collapsed by default -->
+  <details class="tools">
+    <summary>More tools — birthday &amp; image</summary>
+    <div class="tool-body">
+      <div class="tool-row">
+        <label for="bday-input">🎂 Birthday</label>
+        <input type="date" id="bday-input">
+        <button type="button" class="btn-s btn-fill" id="btn-bday-set">Set</button>
+        <button type="button" class="btn-s btn-danger" id="btn-bday-remove">Remove</button>
+      </div>
+      <div class="tool-row">
+        <button type="button" class="btn-s" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
+      </div>
+      <div id="bday-status" class="mini-status"></div>
 
-  <!-- Image upload -->
-  <div id="img-bar">
-    <label for="img-file">📷</label>
-    <input type="file" id="img-file" accept="image/*">
-    <button id="btn-img-upload">Send to Chat</button>
-  </div>
-  <div id="img-status"></div>
+      <div class="divider"></div>
+
+      <div class="tool-row">
+        <label for="img-file">📷 Image</label>
+        <input type="file" id="img-file" accept="image/*">
+        <button class="btn-s btn-green" id="btn-img-upload">Send</button>
+      </div>
+      <div id="img-status" class="mini-status"></div>
+    </div>
+  </details>
 
   <div id="search-bar">
     <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">
+    <div id="stats"></div>
+    <div id="dna-wrap">
+      <div id="dna"></div>
+      <div id="dna-legend"></div>
+    </div>
+    <div id="filters">
+      <button class="fchip active" data-f="all">All</button>
+      <button class="fchip" data-f="host">👑 Hosts</button>
+      <button class="fchip" data-f="new">🆕 New</button>
+      <button class="fchip" data-f="premium">⭐ Premium</button>
+      <button class="fchip" data-f="teacher">🎓 Teacher</button>
+      <button class="fchip" data-f="male">♂</button>
+      <button class="fchip" data-f="female">♀</button>
+    </div>
+    <div id="sortrow">
+      <span>Sort</span>
+      <select id="sort">
+        <option value="recent">Most recent</option>
+        <option value="level-desc">Level ↓</option>
+        <option value="level-asc">Level ↑</option>
+        <option value="name">Name A–Z</option>
+        <option value="country">Country</option>
+      </select>
+      <span class="hint">Tap a person for locate · join · copy</span>
+    </div>
   </div>
 
   <ul id="list"></ul>

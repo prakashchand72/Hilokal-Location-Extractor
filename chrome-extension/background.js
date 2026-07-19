@@ -142,10 +142,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     if (msg.action === 'gcc_entry') {
         ensureInit().then(() => {
-            const key = msg.name + '|' + msg.city;
+            const key = (msg.uid != null) ? ('id:' + msg.uid) : (msg.name + '|' + msg.city);
             if (!seen.has(key)) {
                 seen.add(key);
-                entries.push({ name: msg.name, city: msg.city, ts: msg.ts });
+                entries.push({
+                    uid: msg.uid, name: msg.name, city: msg.city, country: msg.country || '',
+                    gender: msg.gender || '', level: msg.level, native: msg.native || '',
+                    target: msg.target || '', role: msg.role || '', badge: msg.badge || '',
+                    newUser: msg.newUser || 0, serious: msg.serious || 0, premium: msg.premium || 0,
+                    teacher: msg.teacher || 0, color: msg.color || '',
+                    avatar: msg.avatar || '', bio: msg.bio || '', ts: msg.ts,
+                });
                 chrome.storage.session.set({ entries });
                 setBadge(entries.length);
             }
@@ -175,6 +182,65 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     if (msg.action === 'get_entries') {
         ensureInit().then(() => sendResponse({ entries, callId: currentCallId }));
+        return true;
+    }
+
+    // ── Locate people across active lobby tables ──────────────────────────────
+    // Fetches the active-table list, then each table's /card (throttled), and
+    // builds maps id→table and name→table. Only "speakers" are named in the
+    // lobby data, so only on-stage users can be located.
+    if (msg.action === 'locate') {
+        (async () => {
+            try {
+                const list = await fetch('https://elb.hilokal.com/group-call/available-list?', {
+                    credentials: 'include', headers: { accept: 'application/json' },
+                }).then(r => r.json()).catch(() => []);
+                const ids = (Array.isArray(list) ? list : []).map(t => t.id).filter(Boolean);
+                const byId = {}, byName = {};
+                let idx = 0;
+                async function worker() {
+                    while (idx < ids.length) {
+                        const id = ids[idx++];
+                        try {
+                            const c = await fetch(`https://elb.hilokal.com/group-calls/${id}/card`, {
+                                credentials: 'include', headers: { accept: 'application/json' },
+                            }).then(r => r.json());
+                            const info = {
+                                callId: id,
+                                topic: c.topic || c.description || `Table ${id}`,
+                                visibility: c.visibility || 'public',
+                                count: c.participantCount, limit: c.participantLimit,
+                            };
+                            (c.speakers || []).forEach(s => {
+                                if (s.id != null) byId[s.id] = info;
+                                if (s.name) byName[s.name.trim().toLowerCase()] = info;
+                            });
+                        } catch (_) {}
+                    }
+                }
+                await Promise.all(Array.from({ length: 8 }, worker));
+                sendResponse({ ok: true, byId, byName, tables: ids.length });
+            } catch (err) {
+                sendResponse({ ok: false, error: String(err) });
+            }
+        })();
+        return true;
+    }
+
+    // ── Drive a Hilokal tab to auto-join a table ──────────────────────────────
+    if (msg.action === 'join_table') {
+        chrome.tabs.query({ url: ['https://*.hilokal.com/*', 'https://hilokal.com/*'] }, (tabs) => {
+            const tab = tabs && tabs[0];
+            if (!tab) { sendResponse({ ok: false, error: 'Open Hilokal in a tab first.' }); return; }
+            // Stash the pending join so it survives the lobby navigation/reload.
+            // Must be storage.local: content scripts can't read storage.session by default.
+            chrome.storage.local.set({ pendingJoin: { callId: msg.callId, topic: msg.topic, ts: Date.now() } }, () => {
+                chrome.tabs.update(tab.id, { active: true });
+                if (tab.windowId != null) chrome.windows.update(tab.windowId, { focused: true });
+                chrome.tabs.sendMessage(tab.id, { action: 'do_join', callId: msg.callId, topic: msg.topic }, () => void chrome.runtime.lastError);
+                sendResponse({ ok: true });
+            });
+        });
         return true;
     }
 

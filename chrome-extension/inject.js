@@ -146,10 +146,25 @@ function extractParticipant(obj) {
     if (!obj || typeof obj !== 'object') return;
     if (obj.name && obj.accessCityName) {
         window.postMessage({
-            type: '__HILOKAL_GCC__',
-            name: obj.name,
-            city: obj.accessCityName,
-            ts:   Date.now(),
+            type:    '__HILOKAL_GCC__',
+            uid:     (obj.id != null) ? obj.id : null,
+            name:    obj.name,
+            city:    obj.accessCityName,
+            country: obj.accessCountryCode || obj.countryCode || '',
+            gender:  obj.gender || '',                                   // 'M' | 'F' | ''
+            level:   (typeof obj.languageLevel === 'number') ? obj.languageLevel : null,
+            native:  obj.nativeLang || '',
+            target:  obj.targetLang || '',
+            role:    obj.role || '',                                     // 'host' | ''
+            badge:   obj.badge || '',                                    // 'birthday' | 'newuser-incomplete' | ''
+            newUser: obj.isNewUser ? 1 : 0,
+            serious: obj.isSeriousUser ? 1 : 0,
+            premium: obj.premium ? 1 : 0,
+            teacher: (obj.trainer || (obj.verifiedTeacher && obj.verifiedTeacher !== '')) ? 1 : 0,
+            color:   obj.textColor || '',                                // 'BLUE' | 'PURPLE' | 'YELLOW' | 'DEFAULT' | ''
+            avatar:  obj.profileImageUrl || '',
+            bio:     obj.bio || '',
+            ts:      Date.now(),
         }, '*');
     }
     for (const k in obj) {
@@ -177,33 +192,8 @@ document.addEventListener('keydown', (e) => {
     }
 }, true);
 
-// Floating button
-let _ghostBtn = null;
-function updateGhostBtn() {
-    if (!_ghostBtn) return;
-    _ghostBtn.textContent      = window.__ghost ? '🎤 Ghost ON'  : '🎤 Ghost OFF';
-    _ghostBtn.style.background = window.__ghost ? '#43a047' : '#e53935';
-}
-function addGhostButton() {
-    if (document.getElementById('__hkGhostBtn')) return;
-    _ghostBtn = document.createElement('button');
-    _ghostBtn.id = '__hkGhostBtn';
-    Object.assign(_ghostBtn.style, {
-        position: 'fixed', bottom: '80px', right: '16px', zIndex: '2147483647',
-        padding: '10px 18px', borderRadius: '24px', border: '2px solid rgba(255,255,255,0.8)',
-        color: '#fff', fontWeight: '700', fontSize: '14px', cursor: 'pointer',
-        boxShadow: '0 3px 14px rgba(0,0,0,0.6)',
-    });
-    _ghostBtn.onclick = () => {
-        window.__ghost = !window.__ghost;
-        updateGhostBtn();
-        console.warn('[Ghost]', window.__ghost ? '🟢 ON' : '🔴 OFF');
-    };
-    updateGhostBtn();
-    document.body.appendChild(_ghostBtn);
-}
+// No floating on-page button — the Ghost feature is still reachable via the
+// Ctrl+Shift+G keyboard shortcut above; it just no longer draws UI on the page.
+function updateGhostBtn() { /* button removed — kept as a no-op for the callers above */ }
 
-if (document.body) addGhostButton();
-else document.addEventListener('DOMContentLoaded', addGhostButton);
-
-console.warn('[Ghost] inject.js loaded — Ctrl+Shift+G or click button bottom-right');
+console.warn('[Hilokal] inject.js loaded — Ghost toggle: Ctrl+Shift+G');
