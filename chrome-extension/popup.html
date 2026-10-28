@@ -111,8 +111,15 @@
     #btn-bday-flicker { width: 100%; color: var(--amber); border-color: var(--amber); }
     #btn-bday-flicker.active { background: var(--amber); color: #fff; }
     .mini-status { font-size: 11px; min-height: 14px; color: var(--text-dim); }
-    .mini-status.ok { color: var(--green); } .mini-status.err { color: var(--red); }
-    .divider { height: 1px; background: var(--border); margin: 10px 0; }
+        .mini-status.ok { color: var(--green); } .mini-status.err { color: var(--red); }
+        .divider { height: 1px; background: var(--border); margin: 10px 0; }
+        .chk { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+        .emoji-row { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+        .emoji-row button {
+          font-size: 16px; width: 30px; height: 30px; border-radius: 7px;
+          border: 1px solid var(--border); background: var(--bg); cursor: pointer; line-height: 1;
+        }
+        .emoji-row button:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
 
     /* ── Search ── */
     #search-bar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: none; }
@@ -232,30 +239,63 @@
   </div>
 
   <!-- Secondary tools, collapsed by default -->
-  <details class="tools">
-    <summary>More tools — birthday &amp; image</summary>
-    <div class="tool-body">
-      <div class="tool-row">
-        <label for="bday-input">🎂 Birthday</label>
-        <input type="date" id="bday-input">
-        <button type="button" class="btn-s btn-fill" id="btn-bday-set">Set</button>
-        <button type="button" class="btn-s btn-danger" id="btn-bday-remove">Remove</button>
-      </div>
-      <div class="tool-row">
-        <button type="button" class="btn-s" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
-      </div>
-      <div id="bday-status" class="mini-status"></div>
+    <details class="tools">
+      <summary>More tools — birthday &amp; image</summary>
+      <div class="tool-body">
+        <div class="tool-row">
+          <label for="bday-input">🎂 Birthday</label>
+          <input type="date" id="bday-input">
+          <button type="button" class="btn-s btn-fill" id="btn-bday-set">Set</button>
+          <button type="button" class="btn-s btn-danger" id="btn-bday-remove">Remove</button>
+        </div>
+        <div class="tool-row">
+          <button type="button" class="btn-s" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
+        </div>
+        <div id="bday-status" class="mini-status"></div>
 
-      <div class="divider"></div>
+        <div class="divider"></div>
 
-      <div class="tool-row">
-        <label for="img-file">📷 Image</label>
-        <input type="file" id="img-file" accept="image/*">
-        <button class="btn-s btn-green" id="btn-img-upload">Send</button>
+        <div class="tool-row">
+          <label for="img-file">📷 Image</label>
+          <input type="file" id="img-file" accept="image/*">
+          <button class="btn-s btn-green" id="btn-img-upload">Send</button>
+        </div>
+        <div id="img-status" class="mini-status"></div>
       </div>
-      <div id="img-status" class="mini-status"></div>
-    </div>
-  </details>
+    </details>
+
+    <!-- Visible actions: bean bomb + emoji (things other people see) -->
+    <details class="tools" open>
+      <summary>Visible actions — bean bomb &amp; emoji</summary>
+      <div class="tool-body">
+        <div class="tool-row">
+          <label for="bomb-amount">💣 Bean bomb</label>
+          <input type="number" id="bomb-amount" min="1" value="1" style="width:64px">
+          <button type="button" class="btn-s btn-fill" id="btn-bomb">Send to table</button>
+          <label class="chk"><input type="checkbox" id="bomb-anon">anon</label>
+        </div>
+        <div class="tool-row">
+          <input type="text" id="bomb-msg" placeholder="Optional message (visible to all)" style="flex:1">
+        </div>
+        <div id="bomb-status" class="mini-status"></div>
+
+        <div class="divider"></div>
+
+        <div class="tool-row">
+          <label>😀 React</label>
+          <div id="emoji-quick" class="emoji-row"></div>
+        </div>
+        <div class="tool-row">
+          <input type="text" id="emoji-custom" placeholder="Custom emoji (e.g. 🦊)" style="flex:1">
+          <button type="button" class="btn-s" id="btn-emoji-send">Send</button>
+        </div>
+        <div class="tool-row">
+          <input type="text" id="emoji-tray" placeholder="Tray emojis, comma-separated (e.g. 👍,🔥,🦊)" style="flex:1">
+          <button type="button" class="btn-s" id="btn-emoji-save">Save tray</button>
+        </div>
+        <div id="emoji-status" class="mini-status"></div>
+      </div>
+    </details>
 
   <div id="search-bar">
     <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">

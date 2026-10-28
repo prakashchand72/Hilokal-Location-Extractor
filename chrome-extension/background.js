@@ -340,4 +340,93 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }).catch(err => sendResponse({ ok: false, error: String(err) }));
         return true;
     }
+
+    // ── Bean bomb: send beans to the whole table (visible banner to all) ─────
+    // POST /users/beans-bomb  { amount, type, receiverId[], groupCallId,
+    //                           anonymous, message, needDirectMessage, isToAll }
+    if (msg.action === 'bean_bomb') {
+        ensureInit().then(async () => {
+            if (!currentCallId) {
+                sendResponse({ ok: false, error: 'No call ID — join a group call first.' });
+                return;
+            }
+            const body = {
+                amount: msg.amount || 1,
+                type: msg.type || 'send',
+                receiverId: [],
+                groupCallId: Number(currentCallId),
+                anonymous: !!msg.anonymous,
+                message: msg.message || '',
+                needDirectMessage: false,
+                isToAll: true,
+            };
+            try {
+                const res = await fetch('https://elb.hilokal.com/users/beans-bomb', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+                    referrer: 'https://www.hilokal.com/',
+                    body: JSON.stringify(body),
+                });
+                const text = await res.text().catch(() => '');
+                if (res.ok) { sendResponse({ ok: true }); return; }
+                if (res.status === 401 || res.status === 403) { sendResponse({ ok: false, error: 'Not authorised' }); return; }
+                sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
+            } catch (err) {
+                sendResponse({ ok: false, error: String(err) });
+            }
+        });
+        return true;
+    }
+
+    // ── Custom emoji tray: set your favorite emojis (visible when you react) ──
+    // POST /users/favorite-emojis  [ { type, label }, ... ]
+    if (msg.action === 'set_favorite_emojis') {
+        const list = Array.isArray(msg.emojis) ? msg.emojis : [];
+        fetch('https://elb.hilokal.com/users/favorite-emojis', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+            referrer: 'https://www.hilokal.com/',
+            body: JSON.stringify(list),
+        }).then(async (res) => {
+            const text = await res.text().catch(() => '');
+            if (res.ok) { sendResponse({ ok: true }); return; }
+            if (res.status === 401 || res.status === 403) { sendResponse({ ok: false, error: 'Not authorised' }); return; }
+            sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
+        }).catch(err => sendResponse({ ok: false, error: String(err) }));
+        return true;
+    }
+
+    // ── React with an emoji in the current table (visible to all) ─────────────
+    // POST /emoji  { emoji, roomId, groupCallId }
+    if (msg.action === 'send_emoji') {
+        ensureInit().then(async () => {
+            if (!currentCallId) {
+                sendResponse({ ok: false, error: 'No call ID — join a group call first.' });
+                return;
+            }
+            const body = {
+                emoji: msg.emoji || '👍',
+                roomId: currentTableId ? String(currentTableId) : String(currentCallId),
+                groupCallId: Number(currentCallId),
+            };
+            try {
+                const res = await fetch(`https://elb.hilokal.com/group-call/${currentCallId}/emoji`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+                    referrer: 'https://www.hilokal.com/',
+                    body: JSON.stringify(body),
+                });
+                const text = await res.text().catch(() => '');
+                if (res.ok) { sendResponse({ ok: true }); return; }
+                if (res.status === 401 || res.status === 403) { sendResponse({ ok: false, error: 'Not authorised' }); return; }
+                sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
+            } catch (err) {
+                sendResponse({ ok: false, error: String(err) });
+            }
+        });
+        return true;
+    }
 });

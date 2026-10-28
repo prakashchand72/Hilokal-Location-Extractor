@@ -621,3 +621,76 @@ btnClear.addEventListener('click', () => {
     render({ entries: [], callId: callIdSpan.textContent !== '—' ? callIdSpan.textContent : null });
     seatStatus.textContent = '';
 });
+
+// ── Visible actions: bean bomb + emoji ────────────────────────────────────────
+
+const bombAmount = document.getElementById('bomb-amount');
+const bombAnon  = document.getElementById('bomb-anon');
+const bombMsg   = document.getElementById('bomb-msg');
+const btnBomb   = document.getElementById('btn-bomb');
+const bombStatus= document.getElementById('bomb-status');
+
+const emojiQuick  = document.getElementById('emoji-quick');
+const emojiCustom = document.getElementById('emoji-custom');
+const btnEmojiSend= document.getElementById('btn-emoji-send');
+const emojiTray   = document.getElementById('emoji-tray');
+const btnEmojiSave= document.getElementById('btn-emoji-save');
+const emojiStatus = document.getElementById('emoji-status');
+
+function setStatus(el, ok, msg) {
+    el.textContent = msg;
+    el.className = 'mini-status ' + (ok ? 'ok' : 'err');
+    if (ok) setTimeout(() => { el.textContent = ''; el.className = 'mini-status'; }, 4000);
+}
+
+// Quick-react row (default emojis)
+const QUICK_EMOJIS = ['👍', '🔥', '😂', '❤️', '👏', '🦊', '🎉', '💯'];
+QUICK_EMOJIS.forEach(e => {
+    const b = document.createElement('button');
+    b.textContent = e;
+    b.title = `React ${e}`;
+    b.addEventListener('click', () => {
+        b.disabled = true;
+        chrome.runtime.sendMessage({ action: 'send_emoji', emoji: e }, ({ ok, error }) => {
+            b.disabled = false;
+            setStatus(emojiStatus, ok, ok ? `Reacted ${e}` : `✗ ${error}`);
+        });
+    });
+    emojiQuick.appendChild(b);
+});
+
+btnBomb.addEventListener('click', () => {
+    const amount = parseInt(bombAmount.value, 10) || 1;
+    btnBomb.disabled = true;
+    setStatus(bombStatus, true, 'Sending bean bomb…');
+    chrome.runtime.sendMessage({
+        action: 'bean_bomb',
+        amount,
+        anonymous: bombAnon.checked,
+        message: bombMsg.value.trim(),
+    }, ({ ok, error }) => {
+        btnBomb.disabled = false;
+        setStatus(bombStatus, ok, ok ? `✓ Bean bomb sent (${amount})` : `✗ ${error}`);
+    });
+});
+
+btnEmojiSend.addEventListener('click', () => {
+    const e = emojiCustom.value.trim();
+    if (!e) { setStatus(emojiStatus, false, 'Enter an emoji first.'); return; }
+    btnEmojiSend.disabled = true;
+    chrome.runtime.sendMessage({ action: 'send_emoji', emoji: e }, ({ ok, error }) => {
+        btnEmojiSend.disabled = false;
+        setStatus(emojiStatus, ok, ok ? `Reacted ${e}` : `✗ ${error}`);
+    });
+});
+
+btnEmojiSave.addEventListener('click', () => {
+    const list = emojiTray.value.split(',').map(s => s.trim()).filter(Boolean)
+        .map(label => ({ type: 'emoji', label }));
+    if (!list.length) { setStatus(emojiStatus, false, 'Enter at least one emoji.'); return; }
+    btnEmojiSave.disabled = true;
+    chrome.runtime.sendMessage({ action: 'set_favorite_emojis', emojis: list }, ({ ok, error }) => {
+        btnEmojiSave.disabled = false;
+        setStatus(emojiStatus, ok, ok ? `✓ Tray saved (${list.length})` : `✗ ${error}`);
+    });
+});

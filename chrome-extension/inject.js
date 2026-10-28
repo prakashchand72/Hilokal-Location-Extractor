@@ -16,7 +16,9 @@ window.fetch = function (input, init) {
     try {
         const url = typeof input === 'string' ? input
                   : (input && typeof input.url === 'string') ? input.url : '';
-        const m = url.match(/\/group-call\/(\d+)\/emoji/);
+        // Capture the call id from ANY group-call request (singular or plural),
+        // so it's set as soon as you're in a table — not just on emoji reactions.
+        const m = url.match(/\/group-calls?\/(\d+)\/(?:emoji|seat-request|card|messages|pin)/);
         if (m) window.postMessage({ type: '__HILOKAL_CALL_ID__', callId: m[1] }, '*');
     } catch (_) {}
     return OriginalFetch(input, init);
