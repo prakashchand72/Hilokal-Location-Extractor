@@ -53,83 +53,78 @@
       padding: 2px 9px; border-radius: 999px;
     }
 
-    /* ── Sections ── */
-    .section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
-    .section-soft { background: var(--bg-soft); }
-    .label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; }
+    /* ── Tab bar ── */
+    .tabs {
+      display: flex; border-bottom: 1px solid var(--border);
+      background: var(--bg-soft); position: sticky; top: 0; z-index: 5;
+    }
+    .tab {
+      flex: 1; text-align: center; padding: 9px 4px; cursor: pointer;
+      font-size: 11.5px; font-weight: 600; color: var(--text-dim);
+      border-bottom: 2px solid transparent; transition: .12s;
+      user-select: none;
+    }
+    .tab:hover { color: var(--accent); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .panel { display: none; }
+    .panel.active { display: block; }
 
-    /* ── Call / seat ── */
-    .seat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    #call-id-label { font-size: 12px; color: var(--text-dim); flex: 1; }
-    #call-id { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-    #call-id.live { color: var(--green); }
-    #btn-seat {
-      font-size: 12px; font-weight: 600; padding: 6px 14px;
-      border: none; border-radius: 7px; background: var(--accent); color: #fff;
-      cursor: pointer; white-space: nowrap; transition: background .12s;
-    }
-    #btn-seat:hover:not(:disabled) { background: var(--accent-d); }
-    #btn-seat:disabled { background: var(--text-mute); cursor: default; opacity: .7; }
-    #burst-bar { display: flex; gap: 6px; }
-    .btn-burst {
-      flex: 1; font-size: 12px; font-weight: 500; padding: 6px 0;
-      border: 1px solid var(--border); border-radius: 7px;
-      background: var(--bg); color: var(--text); cursor: pointer; transition: .12s;
-    }
-    .btn-burst:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
-    .btn-burst:disabled { opacity: .45; cursor: default; }
-    #seat-status { font-size: 11.5px; min-height: 15px; margin-top: 7px; color: var(--text-dim); }
-    #seat-status.ok { color: var(--green); } #seat-status.err { color: var(--red); }
+    /* ── Section padding ── */
+    .pad { padding: 12px 14px; }
+    .label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; }
 
-    /* ── Collapsible tools ── */
-    details.tools { border-bottom: 1px solid var(--border); background: var(--bg-soft); }
-    details.tools > summary {
-      list-style: none; cursor: pointer; padding: 10px 14px;
-      font-size: 12px; font-weight: 600; color: var(--text-dim);
-      display: flex; align-items: center; gap: 6px;
+    /* ── Buttons ── */
+    .btn {
+      font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 7px;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text);
+      transition: .12s;
     }
-    details.tools > summary::-webkit-details-marker { display: none; }
-    details.tools > summary::before { content: "▸"; font-size: 10px; transition: transform .15s; }
-    details.tools[open] > summary::before { transform: rotate(90deg); }
-    .tool-body { padding: 4px 14px 12px; }
-    .tool-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-    .tool-row:last-child { margin-bottom: 0; }
-    .tool-row label { font-size: 11.5px; color: var(--text-dim); flex-shrink: 0; }
-    input[type=date], input[type=file] {
-      flex: 1; min-width: 0; font-size: 12px; padding: 5px 7px;
-      border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text);
-    }
-    input[type=file] { padding: 4px; }
-    .btn-s {
-      font-size: 12px; font-weight: 500; padding: 5px 11px; border-radius: 6px;
-      cursor: pointer; white-space: nowrap; flex-shrink: 0; border: 1px solid var(--border); background: var(--bg); color: var(--text);
-    }
+    .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .btn:disabled { opacity: .5; cursor: default; }
     .btn-fill  { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn-fill:hover { background: var(--accent-d); }
-    .btn-danger { color: var(--red); border-color: var(--red); }
+    .btn-fill:hover:not(:disabled) { background: var(--accent-d); color: #fff; }
     .btn-green { background: var(--green); border-color: var(--green); color: #fff; }
-    #btn-bday-flicker { width: 100%; color: var(--amber); border-color: var(--amber); }
-    #btn-bday-flicker.active { background: var(--amber); color: #fff; }
-    .mini-status { font-size: 11px; min-height: 14px; color: var(--text-dim); }
-        .mini-status.ok { color: var(--green); } .mini-status.err { color: var(--red); }
-        .divider { height: 1px; background: var(--border); margin: 10px 0; }
-        .chk { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
-        .emoji-row { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
-        .emoji-row button {
-          font-size: 16px; width: 30px; height: 30px; border-radius: 7px;
-          border: 1px solid var(--border); background: var(--bg); cursor: pointer; line-height: 1;
-        }
-        .emoji-row button:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+    .btn-green:hover:not(:disabled) { filter: brightness(1.1); color: #fff; }
+    .btn-danger { color: var(--red); border-color: var(--red); }
+    .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--red) 8%, transparent); color: var(--red); }
+    .btn-amber { color: var(--amber); border-color: var(--amber); }
+    .btn-amber.active { background: var(--amber); color: #fff; }
+    .btn-block { width: 100%; }
 
-    /* ── Search ── */
-    #search-bar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: none; }
-    #search-bar.visible { display: block; }
+    /* ── Inputs ── */
+    input[type=text], input[type=number], input[type=date], input[type=file], select {
+      flex: 1; min-width: 0; font-size: 12px; padding: 6px 8px;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); color: var(--text); outline: none;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input[type=file] { padding: 4px; }
+    input[type=number] { width: 64px; flex: 0 0 auto; }
+    .row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .row:last-child { margin-bottom: 0; }
+    .row label { font-size: 11.5px; color: var(--text-dim); flex-shrink: 0; }
+    .chk { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+    .divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* ── Status ── */
+    .status { font-size: 11px; min-height: 15px; color: var(--text-dim); margin-top: 6px; }
+    .status.ok { color: var(--green); } .status.err { color: var(--red); }
+
+    /* ── Emoji row ── */
+    .emoji-row { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+    .emoji-row button {
+      font-size: 16px; width: 30px; height: 30px; border-radius: 7px;
+      border: 1px solid var(--border); background: var(--bg); cursor: pointer; line-height: 1;
+    }
+    .emoji-row button:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+    /* ── Search / stats ── */
     #search {
       width: 100%; padding: 7px 11px; font-size: 13px;
       border: 1px solid var(--border); border-radius: 8px; background: var(--bg-sunk); color: var(--text); outline: none;
     }
     #search:focus { border-color: var(--accent); background: var(--bg); }
-    /* stats + filters */
     #stats { margin-top: 8px; font-size: 11px; color: var(--text-dim); line-height: 1.5; font-variant-numeric: tabular-nums; }
     #stats b { color: var(--text); font-weight: 700; }
     #filters { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
@@ -139,43 +134,21 @@
     }
     .fchip:hover { border-color: var(--accent); color: var(--accent); }
     .fchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .chip.tchr { background: color-mix(in srgb, #06b6d4 18%, transparent); color: #0891b2; }
-    #list li { cursor: pointer; }
-    #list li.copied { background: color-mix(in srgb, var(--green) 12%, transparent); }
-    /* Room DNA bar (level distribution) */
     #dna-wrap { margin-top: 8px; }
     #dna { display: flex; height: 9px; border-radius: 5px; overflow: hidden; background: var(--bg-sunk); }
     #dna .seg { height: 100%; }
     #dna-legend { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 5px; font-size: 10px; color: var(--text-dim); }
     #dna-legend span { display: inline-flex; align-items: center; gap: 3px; }
     #dna-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-    /* Sort */
     #sortrow { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--text-dim); }
     #sort { font-size: 11px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
     .hint { font-size: 10px; color: var(--text-mute); }
-    /* per-person action tray */
-    .rowmain { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .tray { display: none; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0 2px 46px; }
-    .tray.open { display: flex; }
-    .tbtn {
-      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
-      border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer;
-    }
-    .tbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-    .tbtn:disabled { opacity: .6; cursor: default; }
-    .tbtn.join { background: var(--green); border-color: var(--green); color: #fff; }
-    .tbtn.join:hover { filter: brightness(1.1); color: #fff; }
-    .tbtn.join.priv { background: var(--text-mute); border-color: var(--text-mute); cursor: default; }
-    .tray-status { font-size: 10.5px; color: var(--text-dim); }
-    .ploc { font-size: 11px; color: var(--green); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
     /* ── Participant list ── */
     #list { list-style: none; max-height: 380px; overflow-y: auto; }
-    #list li {
-      display: flex; flex-direction: column; align-items: stretch;
-      padding: 9px 14px; border-bottom: 1px solid var(--border);
-    }
+    #list li { display: flex; flex-direction: column; align-items: stretch; padding: 9px 14px; border-bottom: 1px solid var(--border); }
     #list li:hover { background: var(--bg-soft); }
+    .rowmain { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .avatar {
       width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
       object-fit: cover; background: var(--bg-sunk);
@@ -189,6 +162,19 @@
     .city { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .langs { flex-shrink: 0; font-variant: small-caps; letter-spacing: .3px; }
     .time { font-size: 10.5px; color: var(--text-mute); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .tray { display: none; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 0 2px 46px; }
+    .tray.open { display: flex; }
+    .tbtn {
+      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer;
+    }
+    .tbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .tbtn:disabled { opacity: .6; cursor: default; }
+    .tbtn.join { background: var(--green); border-color: var(--green); color: #fff; }
+    .tbtn.join:hover { filter: brightness(1.1); color: #fff; }
+    .tbtn.join.priv { background: var(--text-mute); border-color: var(--text-mute); cursor: default; }
+    .tray-status { font-size: 10.5px; color: var(--text-dim); }
+    .ploc { font-size: 11px; color: var(--green); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
     /* chips */
     .chip {
@@ -204,6 +190,7 @@
     .chip.new { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
     .chip.prem { background: color-mix(in srgb, #eab308 22%, transparent); color: #b8860b; }
     .chip.bday { background: color-mix(in srgb, var(--f) 14%, transparent); }
+    .chip.tchr { background: color-mix(in srgb, #06b6d4 18%, transparent); color: #0891b2; }
 
     #empty { padding: 28px 14px; font-size: 12.5px; color: var(--text-mute); text-align: center; }
 
@@ -223,111 +210,114 @@
     <span id="count"></span>
   </header>
 
-  <!-- Seat requests -->
-  <div class="section section-soft">
-    <div class="seat-head">
-      <span id="call-id-label">Call ID: <span id="call-id">—</span></span>
-      <button id="btn-seat">Request Seat</button>
-    </div>
-    <div id="burst-bar">
-      <button class="btn-burst" data-n="1">×1</button>
-      <button class="btn-burst" data-n="5">×5</button>
-      <button class="btn-burst" data-n="10">×10</button>
-      <button class="btn-burst" data-n="20">×20</button>
-    </div>
-    <div id="seat-status"></div>
-  </div>
+  <!-- Tab navigation -->
+  <nav class="tabs">
+    <div class="tab active" data-tab="table">🎙️ Table</div>
+    <div class="tab" data-tab="people">👥 People</div>
+    <div class="tab" data-tab="actions">✨ Actions</div>
+    <div class="tab" data-tab="tools">🛠️ Tools</div>
+  </nav>
 
-  <!-- Secondary tools, collapsed by default -->
-    <details class="tools">
-      <summary>More tools — birthday &amp; image</summary>
-      <div class="tool-body">
-        <div class="tool-row">
-          <label for="bday-input">🎂 Birthday</label>
-          <input type="date" id="bday-input">
-          <button type="button" class="btn-s btn-fill" id="btn-bday-set">Set</button>
-          <button type="button" class="btn-s btn-danger" id="btn-bday-remove">Remove</button>
-        </div>
-        <div class="tool-row">
-          <button type="button" class="btn-s" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
-        </div>
-        <div id="bday-status" class="mini-status"></div>
-
-        <div class="divider"></div>
-
-        <div class="tool-row">
-          <label for="img-file">📷 Image</label>
-          <input type="file" id="img-file" accept="image/*">
-          <button class="btn-s btn-green" id="btn-img-upload">Send</button>
-        </div>
-        <div id="img-status" class="mini-status"></div>
+  <!-- ── TABLE tab: seat requests ── -->
+  <div class="panel active" id="panel-table">
+    <div class="pad">
+      <div class="row">
+        <span style="font-size:12px;color:var(--text-dim);flex:1">Call ID: <span id="call-id" style="font-weight:700;color:var(--text)">—</span></span>
+        <button class="btn btn-fill" id="btn-seat">Request Seat</button>
       </div>
-    </details>
-
-    <!-- Visible actions: bean bomb + emoji (things other people see) -->
-    <details class="tools" open>
-      <summary>Visible actions — bean bomb &amp; emoji</summary>
-      <div class="tool-body">
-        <div class="tool-row">
-          <label for="bomb-amount">💣 Bean bomb</label>
-          <input type="number" id="bomb-amount" min="1" value="1" style="width:64px">
-          <button type="button" class="btn-s btn-fill" id="btn-bomb">Send to table</button>
-          <label class="chk"><input type="checkbox" id="bomb-anon">anon</label>
-        </div>
-        <div class="tool-row">
-          <input type="text" id="bomb-msg" placeholder="Optional message (visible to all)" style="flex:1">
-        </div>
-        <div id="bomb-status" class="mini-status"></div>
-
-        <div class="divider"></div>
-
-        <div class="tool-row">
-          <label>😀 React</label>
-          <div id="emoji-quick" class="emoji-row"></div>
-        </div>
-        <div class="tool-row">
-          <input type="text" id="emoji-custom" placeholder="Custom emoji (e.g. 🦊)" style="flex:1">
-          <button type="button" class="btn-s" id="btn-emoji-send">Send</button>
-        </div>
-        <div class="tool-row">
-          <input type="text" id="emoji-tray" placeholder="Tray emojis, comma-separated (e.g. 👍,🔥,🦊)" style="flex:1">
-          <button type="button" class="btn-s" id="btn-emoji-save">Save tray</button>
-        </div>
-        <div id="emoji-status" class="mini-status"></div>
+      <div class="row" style="gap:6px">
+        <button class="btn" data-n="1" style="flex:1">×1</button>
+        <button class="btn" data-n="5" style="flex:1">×5</button>
+        <button class="btn" data-n="10" style="flex:1">×10</button>
+        <button class="btn" data-n="20" style="flex:1">×20</button>
       </div>
-    </details>
-
-  <div id="search-bar">
-    <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">
-    <div id="stats"></div>
-    <div id="dna-wrap">
-      <div id="dna"></div>
-      <div id="dna-legend"></div>
-    </div>
-    <div id="filters">
-      <button class="fchip active" data-f="all">All</button>
-      <button class="fchip" data-f="host">👑 Hosts</button>
-      <button class="fchip" data-f="new">🆕 New</button>
-      <button class="fchip" data-f="premium">⭐ Premium</button>
-      <button class="fchip" data-f="teacher">🎓 Teacher</button>
-      <button class="fchip" data-f="male">♂</button>
-      <button class="fchip" data-f="female">♀</button>
-    </div>
-    <div id="sortrow">
-      <span>Sort</span>
-      <select id="sort">
-        <option value="recent">Most recent</option>
-        <option value="level-desc">Level ↓</option>
-        <option value="level-asc">Level ↑</option>
-        <option value="name">Name A–Z</option>
-        <option value="country">Country</option>
-      </select>
-      <span class="hint">Tap a person for locate · join · copy</span>
+      <div id="seat-status" class="status"></div>
     </div>
   </div>
 
-  <ul id="list"></ul>
-  <p id="empty"></p>
+  <!-- ── PEOPLE tab: search, filters, list ── -->
+  <div class="panel" id="panel-people">
+    <div class="pad">
+      <input id="search" type="search" placeholder="Search by name…" autocomplete="off" spellcheck="false">
+      <div id="stats"></div>
+      <div id="dna-wrap">
+        <div id="dna"></div>
+        <div id="dna-legend"></div>
+      </div>
+      <div id="filters">
+        <button class="fchip active" data-f="all">All</button>
+        <button class="fchip" data-f="host">👑 Hosts</button>
+        <button class="fchip" data-f="new">🆕 New</button>
+        <button class="fchip" data-f="premium">⭐ Premium</button>
+        <button class="fchip" data-f="teacher">🎓 Teacher</button>
+        <button class="fchip" data-f="male">♂</button>
+        <button class="fchip" data-f="female">♀</button>
+      </div>
+      <div id="sortrow">
+        <span>Sort</span>
+        <select id="sort">
+          <option value="recent">Most recent</option>
+          <option value="level-desc">Level ↓</option>
+          <option value="level-asc">Level ↑</option>
+          <option value="name">Name A–Z</option>
+          <option value="country">Country</option>
+        </select>
+        <span class="hint">Tap a person for locate · join · copy</span>
+      </div>
+    </div>
+    <ul id="list"></ul>
+    <p id="empty"></p>
+  </div>
+
+  <!-- ── ACTIONS tab: visible-to-others actions ── -->
+  <div class="panel" id="panel-actions">
+    <div class="pad">
+      <div class="label">React</div>
+      <div class="row">
+        <div id="emoji-quick" class="emoji-row"></div>
+      </div>
+      <div id="emoji-status" class="status"></div>
+
+      <div class="divider"></div>
+
+      <div class="label">Bean bomb</div>
+      <div class="row">
+        <input type="number" id="bomb-amount" min="1" value="1">
+        <button class="btn btn-fill" id="btn-bomb">Send to table</button>
+        <label class="chk"><input type="checkbox" id="bomb-anon">anon</label>
+      </div>
+      <div class="row">
+        <input type="text" id="bomb-msg" placeholder="Optional message (visible to all)">
+      </div>
+      <div id="bomb-status" class="status"></div>
+
+    </div>
+  </div>
+
+  <!-- ── TOOLS tab: birthday + image ── -->
+  <div class="panel" id="panel-tools">
+    <div class="pad">
+      <div class="label">Birthday</div>
+      <div class="row">
+        <input type="date" id="bday-input">
+        <button class="btn btn-fill" id="btn-bday-set">Set</button>
+        <button class="btn btn-danger" id="btn-bday-remove">Remove</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-amber btn-block" id="btn-bday-flicker">Flicker (Set ↔ Unset)</button>
+      </div>
+      <div id="bday-status" class="status"></div>
+
+      <div class="divider"></div>
+
+      <div class="label">Image to chat</div>
+      <div class="row">
+        <input type="file" id="img-file" accept="image/*">
+        <button class="btn btn-green" id="btn-img-upload">Send</button>
+      </div>
+      <div id="img-status" class="status"></div>
+    </div>
+  </div>
 
   <footer>
     <button id="btn-copy">Copy CSV</button>

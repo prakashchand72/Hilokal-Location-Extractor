@@ -6,7 +6,6 @@ const btnSeat     = document.getElementById('btn-seat');
 const seatStatus  = document.getElementById('seat-status');
 const btnCopy     = document.getElementById('btn-copy');
 const btnClear    = document.getElementById('btn-clear');
-const searchBar   = document.getElementById('search-bar');
 const searchInput = document.getElementById('search');
 
 let allEntries = [];
@@ -336,10 +335,9 @@ setInterval(() => {
         callIdSpan.textContent = res.callId || '—';
         callIdSpan.classList.toggle('live', !!res.callId);
         btnSeat.disabled = !res.callId;
-        document.querySelectorAll('.btn-burst').forEach(b => b.disabled = !res.callId);
+        document.querySelectorAll('.btn[data-n]').forEach(b => b.disabled = !res.callId);
         const changed = (res.entries || []).length !== allEntries.length;
         allEntries = res.entries || [];
-        searchBar.classList.toggle('visible', allEntries.length > 0);
         // Always refresh stats/DNA; only rebuild the list when the set changed
         if (changed) applyFilter();
         else { renderStats(allEntries); renderDNA(allEntries); }
@@ -350,9 +348,8 @@ function render({ entries = [], callId = null }) {
     callIdSpan.textContent = callId || '—';
     callIdSpan.classList.toggle('live', !!callId);
     btnSeat.disabled = !callId;
-    document.querySelectorAll('.btn-burst').forEach(b => b.disabled = !callId);
+    document.querySelectorAll('.btn[data-n]').forEach(b => b.disabled = !callId);
     allEntries = entries;
-    searchBar.classList.toggle('visible', entries.length > 0);
     applyFilter();
 }
 
@@ -417,14 +414,14 @@ btnSeat.addEventListener('click', () => {
 });
 
 // Burst buttons — send exactly N requests then stop
-document.querySelectorAll('.btn-burst').forEach(btn => {
+document.querySelectorAll('.btn[data-n]').forEach(btn => {
     btn.addEventListener('click', () => {
         const n = parseInt(btn.dataset.n);
-        document.querySelectorAll('.btn-burst').forEach(b => b.disabled = true);
+        document.querySelectorAll('.btn[data-n]').forEach(b => b.disabled = true);
         seatStatus.textContent = `Sending ${n}×…`;
         seatStatus.className = '';
         chrome.runtime.sendMessage({ action: 'send_burst', count: n }, ({ ok, sent, error }) => {
-            document.querySelectorAll('.btn-burst').forEach(b => b.disabled = false);
+            document.querySelectorAll('.btn[data-n]').forEach(b => b.disabled = false);
             if (ok) {
                 seatStatus.textContent = `✓ Sent ${sent} of ${n}`;
                 seatStatus.className = 'ok';
@@ -631,10 +628,6 @@ const btnBomb   = document.getElementById('btn-bomb');
 const bombStatus= document.getElementById('bomb-status');
 
 const emojiQuick  = document.getElementById('emoji-quick');
-const emojiCustom = document.getElementById('emoji-custom');
-const btnEmojiSend= document.getElementById('btn-emoji-send');
-const emojiTray   = document.getElementById('emoji-tray');
-const btnEmojiSave= document.getElementById('btn-emoji-save');
 const emojiStatus = document.getElementById('emoji-status');
 
 function setStatus(el, ok, msg) {
@@ -674,23 +667,26 @@ btnBomb.addEventListener('click', () => {
     });
 });
 
-btnEmojiSend.addEventListener('click', () => {
-    const e = emojiCustom.value.trim();
-    if (!e) { setStatus(emojiStatus, false, 'Enter an emoji first.'); return; }
-    btnEmojiSend.disabled = true;
-    chrome.runtime.sendMessage({ action: 'send_emoji', emoji: e }, ({ ok, error }) => {
-        btnEmojiSend.disabled = false;
-        setStatus(emojiStatus, ok, ok ? `Reacted ${e}` : `✗ ${error}`);
-    });
-});
+// ── Pin current table to my profile ──────────────────────────────────────────
 
-btnEmojiSave.addEventListener('click', () => {
-    const list = emojiTray.value.split(',').map(s => s.trim()).filter(Boolean)
-        .map(label => ({ type: 'emoji', label }));
-    if (!list.length) { setStatus(emojiStatus, false, 'Enter at least one emoji.'); return; }
-    btnEmojiSave.disabled = true;
-    chrome.runtime.sendMessage({ action: 'set_favorite_emojis', emojis: list }, ({ ok, error }) => {
-        btnEmojiSave.disabled = false;
-        setStatus(emojiStatus, ok, ok ? `✓ Tray saved (${list.length})` : `✗ ${error}`);
+
+
+
+
+
+
+
+
+
+
+
+
+// ── Tab navigation ────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
     });
 });

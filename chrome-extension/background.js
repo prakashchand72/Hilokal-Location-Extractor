@@ -379,25 +379,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return true;
     }
 
-    // ── Custom emoji tray: set your favorite emojis (visible when you react) ──
-    // POST /users/favorite-emojis  [ { type, label }, ... ]
-    if (msg.action === 'set_favorite_emojis') {
-        const list = Array.isArray(msg.emojis) ? msg.emojis : [];
-        fetch('https://elb.hilokal.com/users/favorite-emojis', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'accept': 'application/json', 'content-type': 'application/json' },
-            referrer: 'https://www.hilokal.com/',
-            body: JSON.stringify(list),
-        }).then(async (res) => {
-            const text = await res.text().catch(() => '');
-            if (res.ok) { sendResponse({ ok: true }); return; }
-            if (res.status === 401 || res.status === 403) { sendResponse({ ok: false, error: 'Not authorised' }); return; }
-            sendResponse({ ok: false, error: `Server ${res.status}: ${text}` });
-        }).catch(err => sendResponse({ ok: false, error: String(err) }));
-        return true;
-    }
-
     // ── React with an emoji in the current table (visible to all) ─────────────
     // POST /emoji  { emoji, roomId, groupCallId }
     if (msg.action === 'send_emoji') {
@@ -429,4 +410,5 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         });
         return true;
     }
+
 });
